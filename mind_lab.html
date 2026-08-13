@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Instrument &mdash; Personality &amp; Reasoning Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDE9DD;
+    --paper-2:#E4DFD0;
+    --ink:#1E2233;
+    --ink-soft:#4A5169;
+    --ink-faint:#7A8098;
+    --brass:#AD7D3C;
+    --brass-dim:#C9A876;
+    --teal:#28545A;
+    --teal-dim:#6E9498;
+    --line:#C9C0A9;
+    --red:#9C4A3C;
+    --good:#3E6B4F;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .bg-texture{
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(30,34,51,0.025) 0px, rgba(30,34,51,0.025) 1px, transparent 1px, transparent 3px);
+    opacity:.5;
+  }
+  .stage{position:relative;z-index:1;min-height:100vh;display:none;}
+  .stage.active{display:block;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;margin:0;color:var(--ink);}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  button:focus-visible, a:focus-visible, input:focus-visible, label:focus-within{
+    outline:2px solid var(--brass); outline-offset:3px;
+  }
+
+  /* ===== HEADER / NAV ===== */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px clamp(20px,4vw,56px);
+    border-bottom:1px solid var(--line);
+  }
+  .brandmark{display:flex;align-items:center;gap:10px;}
+  .brandmark svg{width:26px;height:26px;}
+  .brandmark .word{font-family:'Fraunces',serif;font-weight:600;font-size:18px;letter-spacing:.01em;}
+  .brandmark .word em{font-style:italic;color:var(--brass);}
+  .topbar .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);letter-spacing:.08em;}
+
+  /* ===== LANDING ===== */
+  .landing-wrap{max-width:1120px;margin:0 auto;padding:clamp(40px,7vw,90px) clamp(20px,4vw,56px) 80px;}
+  .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;}
+  @media (max-width:860px){.hero{grid-template-columns:1fr;}}
+  .hero h1{font-size:clamp(38px,5.4vw,64px);line-height:1.02;letter-spacing:-.01em;}
+  .hero h1 .accent{color:var(--brass);font-style:italic;}
+  .hero p.lede{font-size:17px;color:var(--ink-soft);max-width:46ch;margin-top:20px;}
+  .hero .fine{margin-top:22px;font-size:13px;color:var(--ink-faint);max-width:48ch;}
+  .dial-wrap{display:flex;justify-content:center;}
+  .dial-wrap svg{width:100%;max-width:360px;height:auto;}
+
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:56px;}
+  @media (max-width:720px){.cards{grid-template-columns:1fr;}}
+  .card{
+    border:1px solid var(--line);
+    background:var(--paper-2);
+    padding:30px 28px;
+    display:flex;flex-direction:column;gap:14px;
+    transition:transform .18s ease, border-color .18s ease;
+  }
+  .card:hover{border-color:var(--ink-faint);}
+  .card .num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--brass);letter-spacing:.1em;}
+  .card h2{font-size:26px;}
+  .card p{color:var(--ink-soft);font-size:14.5px;margin:0;}
+  .card .meta{display:flex;gap:18px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-faint);margin-top:auto;padding-top:14px;border-top:1px solid var(--line);}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+    padding:12px 20px;font-size:14px;font-weight:600;letter-spacing:.01em;
+    border-radius:var(--radius);
+  }
+  .btn:hover{background:var(--brass);border-color:var(--brass);color:var(--ink);}
+  .btn.ghost{background:transparent;color:var(--ink);}
+  .btn.ghost:hover{background:var(--ink);color:var(--paper);}
+  .btn.teal{background:var(--teal);border-color:var(--teal);}
+  .btn.teal:hover{background:var(--teal-dim);border-color:var(--teal-dim);}
+  .btn[disabled]{opacity:.35;pointer-events:none;}
+
+  .disclaimer-strip{
+    margin-top:60px;border-top:1px solid var(--line);padding-top:22px;
+    font-size:12.5px;color:var(--ink-faint);max-width:74ch;
+  }
+
+  /* ===== TEST SHELL ===== */
+  .test-shell{max-width:760px;margin:0 auto;padding:40px clamp(18px,4vw,40px) 100px;}
+  .test-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:34px;flex-wrap:wrap;gap:12px;}
+  .progress-track{
+    height:3px;background:var(--line);width:100%;position:relative;margin-top:10px;
+  }
+  .progress-fill{height:100%;background:var(--brass);transition:width .3s ease;}
+  .progress-fill.teal{background:var(--teal);}
+  .qcounter{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);}
+  .timer{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--red);border:1px solid var(--red);padding:4px 10px;letter-spacing:.05em;}
+
+  .question-card{
+    border:1px solid var(--line);background:var(--paper-2);
+    padding:clamp(24px,4vw,44px);
+    min-height:260px;
+  }
+  .qtag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--brass);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;}
+  .qtag.teal{color:var(--teal);}
+  .qtext{font-family:'Fraunces',serif;font-size:clamp(20px,2.6vw,26px);font-weight:500;line-height:1.3;margin-bottom:26px;}
+
+  .likert{display:flex;flex-direction:column;gap:10px;}
+  .likert-row{display:flex;justify-content:space-between;gap:6px;}
+  .likert-option{
+    flex:1;text-align:center;border:1px solid var(--line);padding:14px 6px;
+    font-size:12.5px;color:var(--ink-soft);background:transparent;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .likert-option .dot{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--ink-faint);}
+  .likert-option:hover{border-color:var(--brass);}
+  .likert-option.selected{border-color:var(--brass);background:rgba(173,125,60,.14);color:var(--ink);}
+  .likert-option.selected .dot{background:var(--brass);border-color:var(--brass);}
+  .likert-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-faint);margin-top:4px;font-family:'IBM Plex Mono',monospace;}
+
+  .mcq{display:flex;flex-direction:column;gap:10px;}
+  .mcq-option{
+    text-align:left;border:1px solid var(--line);padding:14px 18px;background:transparent;
+    font-size:15px;color:var(--ink);display:flex;gap:12px;align-items:center;
+  }
+  .mcq-option .letter{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);border:1px solid var(--line);width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .mcq-option:hover{border-color:var(--teal);}
+  .mcq-option.selected{border-color:var(--teal);background:rgba(40,84,90,.1);}
+  .mcq-option.selected .letter{background:var(--teal);color:var(--paper);border-color:var(--teal);}
+
+  .nav-row{display:flex;justify-content:space-between;margin-top:28px;}
+
+  /* ===== RESULTS ===== */
+  .results-wrap{max-width:920px;margin:0 auto;padding:50px clamp(18px,4vw,40px) 100px;}
+  .res-hero{display:grid;grid-template-columns:.85fr 1.15fr;gap:44px;align-items:center;padding-bottom:40px;border-bottom:1px solid var(--line);}
+  @media (max-width:800px){.res-hero{grid-template-columns:1fr;}}
+  .res-hero .type-code{font-family:'Fraunces',serif;font-size:clamp(48px,8vw,84px);font-weight:600;color:var(--ink);letter-spacing:-.01em;line-height:1;}
+  .res-hero .type-name{font-size:20px;color:var(--brass);font-style:italic;font-family:'Fraunces',serif;margin-top:6px;}
+  .res-hero p{color:var(--ink-soft);margin-top:16px;font-size:15px;}
+
+  .axis-bars{display:flex;flex-direction:column;gap:18px;margin-top:14px;}
+  .axis-bar-label{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-faint);margin-bottom:6px;}
+  .axis-bar-label strong{color:var(--ink);}
+  .axis-track{height:8px;background:var(--line);position:relative;}
+  .axis-fill{position:absolute;top:0;left:0;height:100%;background:var(--brass);}
+  .axis-mid{position:absolute;top:-4px;left:50%;width:1px;height:16px;background:var(--ink-faint);}
+
+  .section-title{display:flex;align-items:baseline;gap:12px;margin:52px 0 20px;}
+  .section-title h3{font-size:22px;}
+  .section-title .n{font-family:'IBM Plex Mono',monospace;color:var(--brass);font-size:13px;}
+
+  .trait-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:700px){.trait-grid{grid-template-columns:1fr;}}
+  .trait-box{border:1px solid var(--line);padding:20px 22px;background:var(--paper-2);}
+  .trait-box.strength{border-left:3px solid var(--good);}
+  .trait-box.growth{border-left:3px solid var(--red);}
+  .trait-box.maintain{border-left:3px solid var(--teal);}
+  .trait-box h4{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px;}
+  .trait-box ul{margin:0;padding-left:18px;font-size:14px;color:var(--ink-soft);display:flex;flex-direction:column;gap:8px;}
+
+  .cog-score-block{display:flex;gap:40px;flex-wrap:wrap;align-items:center;padding-bottom:36px;border-bottom:1px solid var(--line);}
+  .cog-score-block .big{font-family:'Fraunces',serif;font-size:clamp(52px,9vw,88px);font-weight:600;color:var(--teal);line-height:1;}
+  .cog-score-block .band{font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-top:6px;}
+
+  .cat-row{display:grid;grid-template-columns:120px 1fr 60px;gap:16px;align-items:center;margin-bottom:14px;}
+  .cat-row .cname{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-soft);}
+  .cat-row .ctrack{height:8px;background:var(--line);position:relative;}
+  .cat-row .cfill{height:100%;background:var(--teal);}
+  .cat-row .cval{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);text-align:right;}
+
+  .footer-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:56px;padding-top:30px;border-top:1px solid var(--line);}
+
+  .note-box{
+    margin-top:40px;border:1px dashed var(--ink-faint);padding:18px 22px;font-size:13px;color:var(--ink-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important;}
+  }
+</style>
+</head>
+<body>
+<div class="bg-texture"></div>
+
+<!-- ============ LANDING ============ -->
+<section class="stage active" id="stage-landing">
+  <div class="topbar">
+    <div class="brandmark">
+      <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#1E2233" stroke-width="1.4"/><line x1="20" y1="4" x2="20" y2="12" stroke="#AD7D3C" stroke-width="1.6"/><line x1="20" y1="28" x2="20" y2="36" stroke="#1E2233" stroke-width="1.2"/><line x1="4" y1="20" x2="12" y2="20" stroke="#1E2233" stroke-width="1.2"/><line x1="28" y1="20" x2="36" y2="20" stroke="#1E2233" stroke-width="1.2"/><circle cx="20" cy="20" r="2.4" fill="#AD7D3C"/></svg>
+      <div class="word">The <em>Instrument</em></div>
+    </div>
+    <div class="tag">CASE FILE / SELF-ASSESSMENT SUITE</div>
+  </div>
+
+  <div class="landing-wrap">
+    <div class="hero">
+      <div>
+        <div class="eyebrow" style="margin-bottom:16px;">Two readings, one sitting</div>
+        <h1>Measure the <span class="accent">mind's</span> settings, not just its mood.</h1>
+        <p class="lede">A disposition reading (in the style of the Myers&ndash;Briggs framework) and a reasoning workout, each scored with plain findings: what to keep doing, and what's worth working on.</p>
+        <p class="fine">Self-report instruments give a mirror, not a verdict &mdash; they describe tendencies you already half-know, phrased so you can act on them.</p>
+      </div>
+      <div class="dial-wrap" aria-hidden="true">
+        <svg viewBox="0 0 340 340">
+          <circle cx="170" cy="170" r="150" fill="none" stroke="#C9C0A9" stroke-width="1"/>
+          <circle cx="170" cy="170" r="120" fill="none" stroke="#C9C0A9" stroke-width="1"/>
+          <g id="landing-arcs"></g>
+          <circle cx="170" cy="170" r="6" fill="#1E2233"/>
+          <text x="170" y="40" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A8098" letter-spacing="2">E</text>
+          <text x="170" y="308" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A8098" letter-spacing="2">I</text>
+          <text x="24" y="174" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A8098">S</text>
+          <text x="316" y="174" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A8098">N</text>
+          <text x="65" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A8098">T</text>
+          <text x="275" y="268" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A8098">F</text>
+          <text x="275" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A8098">J</text>
+          <text x="65" y="268" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#7A8098">P</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="num">FILE 01</div>
+        <h2>Disposition Reading</h2>
+        <p>32 statements across four axes &mdash; how you direct energy, take in information, decide, and structure your days. Ends in a 4-letter type with strengths, blind spots, and upkeep notes.</p>
+        <div class="meta"><span>~8 MIN</span><span>32 ITEMS</span><span>MBTI-STYLE</span></div>
+        <button class="btn" onclick="startMBTI()">Begin the reading &rarr;</button>
+      </div>
+      <div class="card">
+        <div class="num">FILE 02</div>
+        <h2>Reasoning Workout</h2>
+        <p>16 timed problems &mdash; numerical, verbal, and logical. Scored into a band with a category breakdown so you know exactly where to sharpen up.</p>
+        <div class="meta"><span>~14 MIN</span><span>16 ITEMS</span><span>TIMED</span></div>
+        <button class="btn teal" onclick="startCognitive()">Begin the workout &rarr;</button>
+      </div>
+    </div>
+
+    <div class="disclaimer-strip">
+      <strong style="color:var(--ink);">On accuracy:</strong> this is a self-report personality instrument and an informal reasoning quiz, built for reflection &mdash; not a clinical or professionally normed psychometric assessment. The reasoning score is not a validated IQ. Treat both as a starting point for noticing patterns, not a fixed label.
+    </div>
+  </div>
+</section>
+
+<!-- ============ MBTI TEST ============ -->
+<section class="stage" id="stage-mbti">
+  <div class="test-shell">
+    <div class="test-head">
+      <div>
+        <div class="eyebrow">File 01 &mdash; Disposition Reading</div>
+        <div class="qcounter" id="mbti-counter">Question 1 of 32</div>
+      </div>
+      <button class="btn ghost" onclick="goLanding()">Exit</button>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="mbti-progress" style="width:0%"></div></div>
+
+    <div class="question-card" style="margin-top:28px;">
+      <div class="qtag" id="mbti-qtag">AXIS &middot; ENERGY</div>
+      <div class="qtext" id="mbti-qtext">&mdash;</div>
+      <div class="likert" id="mbti-likert"></div>
+      <div class="likert-labels"><span>Strongly disagree</span><span>Strongly agree</span></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn ghost" id="mbti-back" onclick="mbtiBack()">&larr; Back</button>
+      <button class="btn" id="mbti-next" onclick="mbtiNext()" disabled>Next &rarr;</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COGNITIVE TEST ============ -->
+<section class="stage" id="stage-cog">
+  <div class="test-shell">
+    <div class="test-head">
+      <div>
+        <div class="eyebrow">File 02 &mdash; Reasoning Workout</div>
+        <div class="qcounter" id="cog-counter">Question 1 of 16</div>
+      </div>
+      <div class="timer mono" id="cog-timer">14:00</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill teal" id="cog-progress" style="width:0%"></div></div>
+
+    <div class="question-card" style="margin-top:28px;">
+      <div class="qtag teal" id="cog-qtag">NUMERICAL</div>
+      <div class="qtext" id="cog-qtext">&mdash;</div>
+      <div class="mcq" id="cog-mcq"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn ghost" id="cog-back" onclick="cogBack()">&larr; Back</button>
+      <button class="btn teal" id="cog-next" onclick="cogNext()" disabled>Next &rarr;</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MBTI RESULTS ============ -->
+<section class="stage" id="stage-mbti-results">
+  <div class="topbar">
+    <div class="brandmark">
+      <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#1E2233" stroke-width="1.4"/><circle cx="20" cy="20" r="2.4" fill="#AD7D3C"/></svg>
+      <div class="word">The <em>Instrument</em></div>
+    </div>
+    <div class="tag">READING COMPLETE</div>
+  </div>
+  <div class="results-wrap">
+    <div class="res-hero">
+      <div>
+        <div class="type-code" id="res-code">INTJ</div>
+        <div class="type-name" id="res-name">The Architect</div>
+        <p id="res-summary">&mdash;</p>
+      </div>
+      <div class="axis-bars" id="res-axes"></div>
+    </div>
+
+    <div class="section-title"><h3>What tends to work</h3><span class="n">STRENGTHS</span></div>
+    <div class="trait-grid">
+      <div class="trait-box strength"><h4>Naturally strong in</h4><ul id="res-strengths"></ul></div>
+      <div class="trait-box maintain"><h4>Worth maintaining</h4><ul id="res-maintain"></ul></div>
+    </div>
+
+    <div class="section-title"><h3>What tends to slip</h3><span class="n">GROWTH AREAS</span></div>
+    <div class="trait-grid">
+      <div class="trait-box growth"><h4>Common blind spots</h4><ul id="res-growth"></ul></div>
+      <div class="trait-box growth"><h4>Try this</h4><ul id="res-actions"></ul></div>
+    </div>
+
+    <div class="note-box">Type descriptions describe general tendencies observed in people who answer this way &mdash; not fixed traits. Your answers on the day, your mood, and context all shift the reading. Re-take in a few months and compare.</div>
+
+    <div class="footer-actions">
+      <button class="btn" onclick="startMBTI()">Retake reading</button>
+      <button class="btn teal" onclick="startCognitive()">Take the reasoning workout &rarr;</button>
+      <button class="btn ghost" onclick="goLanding()">Back to start</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COGNITIVE RESULTS ============ -->
+<section class="stage" id="stage-cog-results">
+  <div class="topbar">
+    <div class="brandmark">
+      <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#1E2233" stroke-width="1.4"/><circle cx="20" cy="20" r="2.4" fill="#28545A"/></svg>
+      <div class="word">The <em>Instrument</em></div>
+    </div>
+    <div class="tag">WORKOUT COMPLETE</div>
+  </div>
+  <div class="results-wrap">
+    <div class="cog-score-block">
+      <div>
+        <div class="big" id="cog-score-big">0%</div>
+        <div class="band" id="cog-score-band">&mdash;</div>
+      </div>
+      <p style="max-width:44ch;color:var(--ink-soft);font-size:14.5px;" id="cog-score-desc">&mdash;</p>
+    </div>
+
+    <div class="section-title"><h3>By category</h3><span class="n">BREAKDOWN</span></div>
+    <div id="cog-cat-rows"></div>
+
+    <div class="section-title"><h3>Notes on the reading</h3><span class="n">MAINTAIN &amp; SHARPEN</span></div>
+    <div class="trait-grid">
+      <div class="trait-box strength"><h4>Keep leaning on</h4><ul id="cog-keep"></ul></div>
+      <div class="trait-box growth"><h4>Worth practicing</h4><ul id="cog-work"></ul></div>
+    </div>
+
+    <div class="note-box">This score reflects performance on 16 informal reasoning items under a time limit, not a normed, professionally administered IQ test. Real psychometric IQ testing requires standardized, validated instruments given by a qualified examiner. Use this as a rough, private signal of reasoning style &mdash; not a number to compare against anyone else's.</div>
+
+    <div class="footer-actions">
+      <button class="btn teal" onclick="startCognitive()">Retake workout</button>
+      <button class="btn" onclick="startMBTI()">Take the disposition reading &rarr;</button>
+      <button class="btn ghost" onclick="goLanding()">Back to start</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ===================== SHARED ===================== */
+function showStage(id){
+  document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'auto'});
+}
+function goLanding(){ showStage('stage-landing'); }
+
+/* ===================== MBTI ===================== */
+const mbtiQuestions = [
+  // Axis: EI  (agree -> E)
+  {axis:'EI', pole:'E', text:"I feel recharged after spending time talking with a group of people."},
+  {axis:'EI', pole:'E', text:"I usually think out loud, working through ideas as I speak."},
+  {axis:'EI', pole:'E', text:"I find it easy to start conversations with strangers."},
+  {axis:'EI', pole:'E', text:"I prefer working somewhere busy, with people around me."},
+  {axis:'EI', pole:'E', text:"I enjoy being the center of attention at social events."},
+  {axis:'EI', pole:'E', text:"I process my thoughts better by discussing them out loud."},
+  {axis:'EI', pole:'E', text:"I get restless if I've spent too long by myself."},
+  {axis:'EI', pole:'E', text:"Large gatherings feel energizing to me, rather than draining."},
+  // Axis: SN (agree -> S)
+  {axis:'SN', pole:'S', text:"I trust concrete facts and past experience more than abstract theories."},
+  {axis:'SN', pole:'S', text:"I prefer clear, step-by-step instructions over figuring things out myself."},
+  {axis:'SN', pole:'S', text:"I focus more on present realities than future possibilities."},
+  {axis:'SN', pole:'S', text:"I notice small, practical details that other people often miss."},
+  {axis:'SN', pole:'S', text:"I'd rather use a proven method than an untested new approach."},
+  {axis:'SN', pole:'S', text:"I describe things in specific, literal terms rather than metaphors."},
+  {axis:'SN', pole:'S', text:"I trust what I can directly observe over a hunch or gut feeling."},
+  {axis:'SN', pole:'S', text:"I enjoy hands-on, practical tasks more than theoretical discussion."},
+  // Axis: TF (agree -> T)
+  {axis:'TF', pole:'T', text:"I make decisions based on logic, even if it upsets people."},
+  {axis:'TF', pole:'T', text:"I value honesty over tact when giving feedback."},
+  {axis:'TF', pole:'T', text:"I look for flaws in an argument before I consider its merits."},
+  {axis:'TF', pole:'T', text:"I stay calm and objective when the people around me are emotional."},
+  {axis:'TF', pole:'T', text:"Fairness matters more to me than keeping the peace in a group."},
+  {axis:'TF', pole:'T', text:"I judge ideas mainly by whether they're logically sound."},
+  {axis:'TF', pole:'T', text:"I find it easy to critique someone's work without softening it much."},
+  {axis:'TF', pole:'T', text:"Efficiency matters more to me than making sure everyone feels included."},
+  // Axis: JP (agree -> J)
+  {axis:'JP', pole:'J', text:"I like having a clear plan before I start a project."},
+  {axis:'JP', pole:'J', text:"I feel uneasy when things are left open-ended or unresolved."},
+  {axis:'JP', pole:'J', text:"I prefer to finish one task fully before starting another."},
+  {axis:'JP', pole:'J', text:"I make to-do lists and enjoy checking things off."},
+  {axis:'JP', pole:'J', text:"Deadlines work for me &mdash; I tend to finish well ahead of them."},
+  {axis:'JP', pole:'J', text:"I like my space and schedule to stay organized."},
+  {axis:'JP', pole:'J', text:"I decide things fairly quickly and stick with the decision."},
+  {axis:'JP', pole:'J', text:"Unplanned changes to my schedule irritate me."},
+];
+const axisLabels = {EI:'AXIS \u00b7 ENERGY (E / I)', SN:'AXIS \u00b7 INFORMATION (S / N)', TF:'AXIS \u00b7 DECISIONS (T / F)', JP:'AXIS \u00b7 STRUCTURE (J / P)'};
+
+let mbtiIndex = 0;
+let mbtiAnswers = new Array(mbtiQuestions.length).fill(null);
+
+function startMBTI(){
+  mbtiIndex = 0;
+  mbtiAnswers = new Array(mbtiQuestions.length).fill(null);
+  showStage('stage-mbti');
+  renderMbtiQuestion();
+}
+
+function renderMbtiQuestion(){
+  const q = mbtiQuestions[mbtiIndex];
+  document.getElementById('mbti-counter').textContent = `Question ${mbtiIndex+1} of ${mbtiQuestions.length}`;
+  document.getElementById('mbti-qtag').textContent = axisLabels[q.axis];
+  document.getElementById('mbti-qtext').textContent = q.text;
+  document.getElementById('mbti-progress').style.width = ((mbtiIndex)/mbtiQuestions.length*100)+'%';
+
+  const likertWrap = document.getElementById('mbti-likert');
+  likertWrap.innerHTML = '';
+  const row = document.createElement('div');
+  row.className = 'likert-row';
+  const labels = ['1','2','3','4','5'];
+  labels.forEach((val,i)=>{
+    const opt = document.createElement('button');
+    opt.className = 'likert-option' + (mbtiAnswers[mbtiIndex]===i+1 ? ' selected':'');
+    opt.setAttribute('type','button');
+    opt.innerHTML = `<span class="dot"></span><span>${val}</span>`;
+    opt.onclick = ()=>{
+      mbtiAnswers[mbtiIndex] = i+1;
+      renderMbtiQuestion();
+    };
+    row.appendChild(opt);
+  });
+  likertWrap.appendChild(row);
+
+  document.getElementById('mbti-back').disabled = mbtiIndex===0;
+  document.getElementById('mbti-next').disabled = mbtiAnswers[mbtiIndex]===null;
+  document.getElementById('mbti-next').textContent = (mbtiIndex===mbtiQuestions.length-1) ? 'See results \u2192' : 'Next \u2192';
+}
+
+function mbtiBack(){
+  if(mbtiIndex>0){ mbtiIndex--; renderMbtiQuestion(); }
+}
+function mbtiNext(){
+  if(mbtiAnswers[mbtiIndex]===null) return;
+  if(mbtiIndex < mbtiQuestions.length-1){
+    mbtiIndex++;
+    renderMbtiQuestion();
+  } else {
+    computeMbtiResults();
+  }
+}
+
+const typeData = {
+  ISTJ:{name:"The Inspector",summary:"Grounded and dependable, you build trust by following through on exactly what you said you'd do.",
+    strengths:["Reliable under pressure &mdash; you finish what others abandon","Sharp eye for concrete detail and error-checking","Strong sense of duty and follow-through","Calm, steady presence in a crisis"],
+    growth:["Can be slow to warm to new methods or ideas","May come across as rigid when plans need to flex","Tends to bottle up feelings instead of naming them","Can undervalue people-focused reasoning in decisions"],
+    maintain:["Your habit of finishing what you start","The trust you build through consistency","Your ability to spot practical problems early"],
+    actions:["Practice voicing a feeling before it becomes a grievance","Ask 'what would make this more flexible?' before rejecting change","Delegate instead of absorbing every duty yourself"]},
+  ISFJ:{name:"The Protector",summary:"Quietly attentive, you notice what people need before they ask, and you rarely let them down.",
+    strengths:["Deeply reliable and loyal to people you care about","Excellent memory for personal detail and preference","Patient, practical helper in daily life","Strong follow-through on commitments"],
+    growth:["Struggles to say no or set boundaries","Avoids conflict even when it's necessary","Can suppress personal needs to keep others comfortable","Resists change even when it would help"],
+    maintain:["Your attentiveness to the people around you","Your quiet consistency and follow-through","Your practical, hands-on way of helping"],
+    actions:["Practice one small boundary this week and hold it","Say what you need out loud instead of hinting","Let a plan change without treating it as a threat"]},
+  INFJ:{name:"The Advocate",summary:"You read between the lines of people and situations, and you're pulled toward meaning over convenience.",
+    strengths:["Sees patterns and underlying motives others miss","Deep empathy paired with a long-range vision","Strong personal values that guide decisions","Skilled at written or one-on-one communication"],
+    growth:["Perfectionism that stalls finished work","Burns out from absorbing others' emotions","Can withdraw instead of addressing conflict directly","Overthinks decisions past the point of usefulness"],
+    maintain:["Your ability to see the bigger picture","Your care for doing things that actually matter","Your instinct for what people really mean"],
+    actions:["Ship the 80% version instead of chasing the perfect one","Schedule real alone time to recover after socializing","Say the hard thing directly instead of going quiet"]},
+  INTJ:{name:"The Architect",summary:"You think in systems and long time-horizons, and you'd rather be right than liked.",
+    strengths:["Strategic, independent thinker who sees the whole board","High standards that push quality up","Comfortable making unpopular but sound decisions","Efficient &mdash; low tolerance for wasted effort"],
+    growth:["Can dismiss others' input too quickly","Comes across as blunt or cold under stress","Impatient with inefficiency or small talk","Struggles to ask for help"],
+    maintain:["Your long-range thinking and planning","Your willingness to hold a high bar","Your independence and follow-through on hard problems"],
+    actions:["Ask one clarifying question before disagreeing out loud","Name the human cost of a decision, not just the logic","Practice asking for help before you're overloaded"]},
+  ISTP:{name:"The Craftsman",summary:"Hands-on and unflappable, you'd rather solve the problem in front of you than talk about it.",
+    strengths:["Cool-headed problem solver in the moment","Practical, mechanical, hands-on skill","Adapts quickly when plans fall apart","Doesn't need external validation to act"],
+    growth:["Avoids long-term planning or commitment","Can seem detached from others' emotions","Loses interest once the novelty wears off","Keeps thoughts and feelings to themselves too long"],
+    maintain:["Your calm under real-time pressure","Your practical, resourceful problem-solving","Your independence and self-reliance"],
+    actions:["Finish the project after the interesting part is done","Check in on how a decision affects others, out loud","Set one long-range goal and revisit it monthly"]},
+  ISFP:{name:"The Artist",summary:"You lead with quiet values and aesthetics, preferring to show what you mean rather than argue it.",
+    strengths:["Genuine, values-driven, and non-judgmental","Strong aesthetic and sensory awareness","Adaptable in the moment","Loyal once trust is earned"],
+    growth:["Avoids confrontation past the point it helps","Struggles with long-term planning and deadlines","Takes criticism of work personally","Underestimates own skill or contribution"],
+    maintain:["Your authenticity and quiet integrity","Your sensitivity to beauty and detail","Your flexibility when plans shift"],
+    actions:["Say the disagreement out loud before it festers","Break long-term goals into weekly concrete steps","Separate feedback on the work from feedback on you"]},
+  INFP:{name:"The Mediator",summary:"Idealistic and introspective, you're driven by whether something feels true to your values.",
+    strengths:["Strong personal values and creative imagination","Deep empathy and desire to help others grow","Original thinker, comfortable outside convention","Loyal and caring once invested"],
+    growth:["Struggles to finish projects that lost their spark","Takes criticism as a judgment of self-worth","Avoids conflict, letting resentment build quietly","Idealizes people or plans, then feels let down"],
+    maintain:["Your imagination and originality","Your empathy and care for others' growth","Your commitment to what actually matters to you"],
+    actions:["Set a concrete deadline instead of waiting for inspiration","Separate 'this didn't work' from 'I failed'","Raise a small disagreement before it becomes a big one"]},
+  INTP:{name:"The Logician",summary:"You're happiest chasing an idea to its logical end, even if it means abandoning the plan.",
+    strengths:["Original, rigorous, independent thinker","Comfortable holding complex or contradictory ideas","Skeptical in a useful way &mdash; hard to fool","Quick to spot logical inconsistency"],
+    growth:["Struggles to finish or ship what's been analyzed enough","Can seem detached or dismissive of feelings","Procrastinates on anything routine or administrative","Overexplains instead of deciding"],
+    maintain:["Your intellectual honesty and curiosity","Your comfort with complexity and nuance","Your ability to think from first principles"],
+    actions:["Set a 'good enough' bar and ship at it","Name a feeling in the room before analyzing the problem","Timebox research so it doesn't replace action"]},
+  ESTP:{name:"The Dynamo",summary:"You move first and adjust as you go, more comfortable with action than with theory.",
+    strengths:["Decisive under pressure, thrives in the moment","Persuasive, energetic, socially quick","Practical problem-solver who adapts fast","Doesn't get stuck overthinking"],
+    growth:["Acts before considering longer-term consequences","Gets bored with routine or detail work","Can steamroll quieter voices in a group","Struggles to sit with unresolved plans"],
+    maintain:["Your decisiveness and comfort with risk","Your energy and ability to read a room","Your adaptability when things change fast"],
+    actions:["Pause one extra beat before committing to something big","Ask a quieter person for their view before deciding","Finish the follow-through, not just the exciting part"]},
+  ESFP:{name:"The Performer",summary:"Warm and spontaneous, you bring energy into a room and read people almost instinctively.",
+    strengths:["Warm, engaging, genuinely enjoys people","Reads emotional undercurrents quickly","Adaptable and upbeat under pressure","Generous with attention and encouragement"],
+    growth:["Avoids serious or difficult conversations","Struggles with long-term planning and follow-through","Takes criticism personally and hard","Easily distracted from focused work"],
+    maintain:["Your warmth and ability to lift a room","Your responsiveness to what people need","Your spontaneity and comfort with change"],
+    actions:["Block distraction-free time for one task at a stretch","Practice sitting with a hard conversation instead of deflecting","Write down the plan instead of trusting memory"]},
+  ENFP:{name:"The Campaigner",summary:"Enthusiastic and idea-driven, you connect dots between people and possibilities others don't see.",
+    strengths:["Infectious enthusiasm and creative energy","Strong intuition about people and possibility","Persuasive communicator, natural connector","Genuinely curious about almost everything"],
+    growth:["Starts more than it finishes","Overcommits, then struggles to deliver","Avoids routine or detail-heavy follow-through","Can idealize a new idea past its actual merits"],
+    maintain:["Your curiosity and ability to generate ideas","Your warmth in connecting people together","Your enthusiasm, which is genuinely motivating to others"],
+    actions:["Finish the current project before starting the next","Say no to a new idea before overcommitting again","Build in a boring admin block and actually protect it"]},
+  ENTP:{name:"The Debater",summary:"Quick and combative with ideas, you enjoy testing a position more than defending it.",
+    strengths:["Sharp, fast, associative thinking","Comfortable challenging assumptions others accept","Persuasive and quick on their feet in debate","Genuinely energized by new problems"],
+    growth:["Argues for sport, which can wear people down","Loses interest once a problem is 'solved' intellectually","Struggles with routine follow-through","Can dismiss others' feelings as beside the point"],
+    maintain:["Your willingness to question assumptions","Your quick, flexible thinking under debate","Your genuine curiosity about how things work"],
+    actions:["Ask if this argument needs winning, or just needs to end","Finish implementation, not just the clever idea","Check in on how the debate landed emotionally"]},
+  ESTJ:{name:"The Executive",summary:"Organized and direct, you take charge of getting things done the way that's proven to work.",
+    strengths:["Strong organizer, gets results through structure","Direct communicator, clear expectations","Reliable follow-through on commitments","Comfortable making tough calls quickly"],
+    growth:["Can be inflexible about doing things 'the right way'","Bluntness can land as harsh or dismissive","Impatient with ambiguity or slow process","May undervalue others' emotional read on a decision"],
+    maintain:["Your ability to organize and execute at scale","Your directness &mdash; people know where they stand","Your reliability under a deadline"],
+    actions:["Ask 'what am I missing?' before locking in a plan","Soften delivery, not the standard, when giving feedback","Sit with one ambiguous situation without resolving it early"]},
+  ESFJ:{name:"The Consul",summary:"Warm and organized, you keep the people around you connected and the group running smoothly.",
+    strengths:["Strong sense of responsibility to the group","Warm, attentive, remembers what people need","Reliable organizer of people and logistics","Builds cooperation and morale naturally"],
+    growth:["Seeks approval, sometimes at the cost of own needs","Avoids conflict that would actually help clear the air","Takes criticism of the group personally","Can resist change that unsettles the group's routine"],
+    maintain:["Your warmth and reliability to the people around you","Your gift for organizing people and events","Your loyalty and sense of responsibility"],
+    actions:["Say what you want, not just what keeps the peace","Let one piece of feedback be about the work, not you","Try a new approach even if the old one 'still works'"]},
+  ENFJ:{name:"The Protagonist",summary:"You lead by drawing the best out of people, often sensing their potential before they do.",
+    strengths:["Inspires and mobilizes people around a shared goal","Genuinely attuned to others' emotions and growth","Strong communicator, persuasive and warm","Organized enough to turn vision into action"],
+    growth:["Overextends self to meet others' needs","Struggles to accept help or show vulnerability","Can over-idealize people, then feel let down","Avoids necessary conflict to protect harmony"],
+    maintain:["Your ability to bring out the best in others","Your warmth paired with real organizational drive","Your sense of purpose and follow-through"],
+    actions:["Let someone help you before you're depleted","Give feedback that's honest, not just encouraging","Accept a person's real limits instead of their potential"]},
+  ENTJ:{name:"The Commander",summary:"Confident and strategic, you naturally take the lead and push toward the long-term goal.",
+    strengths:["Decisive, strategic, natural organizer of people","Confident under pressure and ambiguity","Efficient &mdash; cuts through wasted process","Direct communicator with a clear vision"],
+    growth:["Can steamroll dissent instead of hearing it out","Impatient with emotional nuance in decisions","Bluntness reads as domineering under stress","Struggles to slow down and enjoy the present"],
+    maintain:["Your strategic clarity and decisiveness","Your ability to organize people toward a goal","Your directness under pressure"],
+    actions:["Ask for the dissenting view before finalizing a call","Name the emotional cost of a decision, not just the plan","Build in unstructured time with no agenda"]},
+};
+
+function computeMbtiResults(){
+  const totals = {EI:0, SN:0, TF:0, JP:0};
+  mbtiQuestions.forEach((q,i)=>{ totals[q.axis] += mbtiAnswers[i]; });
+  const code =
+    (totals.EI > 24 ? 'E' : 'I') +
+    (totals.SN > 24 ? 'S' : 'N') +
+    (totals.TF > 24 ? 'T' : 'F') +
+    (totals.JP > 24 ? 'J' : 'P');
+
+  const data = typeData[code];
+  document.getElementById('res-code').textContent = code;
+  document.getElementById('res-name').textContent = data.name;
+  document.getElementById('res-summary').textContent = data.summary;
+
+  const axesWrap = document.getElementById('res-axes');
+  axesWrap.innerHTML = '';
+  const axisMeta = [
+    {key:'EI', left:'I', right:'E', total:totals.EI},
+    {key:'SN', left:'N', right:'S', total:totals.SN},
+    {key:'TF', left:'F', right:'T', total:totals.TF},
+    {key:'JP', left:'P', right:'J', total:totals.JP},
+  ];
+  axisMeta.forEach(a=>{
+    const pct = Math.round((a.total-8)/32*100); // 8..40 -> 0..100
+    const row = document.createElement('div');
+    row.innerHTML = `
+      <div class="axis-bar-label"><span>${a.left}</span><strong>${a.left}${(100-pct)}% &nbsp;/&nbsp; ${pct}%${a.right}</strong><span>${a.right}</span></div>
+      <div class="axis-track"><div class="axis-mid"></div><div class="axis-fill" style="width:${pct}%"></div></div>
+    `;
+    axesWrap.appendChild(row);
+  });
+
+  fillList('res-strengths', data.strengths);
+  fillList('res-growth', data.growth);
+  fillList('res-maintain', data.maintain);
+  fillList('res-actions', data.actions);
+
+  showStage('stage-mbti-results');
+}
+function fillList(id, items){
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  items.forEach(t=>{
+    const li = document.createElement('li');
+    li.textContent = t;
+    el.appendChild(li);
+  });
+}
+
+/* landing dial decoration */
+(function drawLandingDial(){
+  const g = document.getElementById('landing-arcs');
+  const arcs = [
+    {r:150, from:-90, to:-40, color:'#AD7D3C'},
+    {r:150, from:90, to:140, color:'#C9C0A9'},
+    {r:120, from:0, to:50, color:'#28545A'},
+    {r:120, from:180, to:230, color:'#C9C0A9'},
+  ];
+  function polar(cx,cy,r,deg){
+    const rad = (deg-90)*Math.PI/180;
+    return [cx + r*Math.cos(rad), cy + r*Math.sin(rad)];
+  }
+  arcs.forEach(a=>{
+    const [x1,y1] = polar(170,170,a.r,a.from);
+    const [x2,y2] = polar(170,170,a.r,a.to);
+    const large = (a.to-a.from) > 180 ? 1 : 0;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M ${x1} ${y1} A ${a.r} ${a.r} 0 ${large} 1 ${x2} ${y2}`);
+    path.setAttribute('stroke', a.color);
+    path.setAttribute('stroke-width','3');
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke-linecap','round');
+    g.appendChild(path);
+  });
+})();
+
+/* ===================== COGNITIVE ===================== */
+const cogQuestions = [
+  {cat:'Numerical', text:"Find the next number: 2, 6, 12, 20, 30, ?", options:["36","40","42","44"], answer:2},
+  {cat:'Logical', text:"Which one does not belong with the others?", options:["Circle","Square","Triangle","Red"], answer:3},
+  {cat:'Verbal', text:"Glove is to Hand as Shoe is to ?", options:["Sock","Foot","Leg","Lace"], answer:1},
+  {cat:'Verbal', text:"Doctor is to Hospital as Teacher is to ?", options:["Chalk","Student","School","Lesson"], answer:2},
+  {cat:'Logical', text:"All Bloops are Razzies. All Razzies are Lazzies. Are all Bloops definitely Lazzies?", options:["Yes","No","Cannot be determined","Only sometimes"], answer:0},
+  {cat:'Numerical', text:"Find the next number: 1, 1, 2, 3, 5, 8, ?", options:["11","12","13","10"], answer:2},
+  {cat:'Logical', text:"Find the next letter: A, C, F, J, O, ?", options:["S","T","U","V"], answer:2},
+  {cat:'Verbal', text:"If MONDAY is coded by shifting each letter forward by 1 (A\u2192B), how is TUESDAY coded?", options:["UVFSEBZ","UVFTEBZ","UWFTEBZ","UVFTEAZ"], answer:1},
+  {cat:'Numerical', text:"If 3 machines make 3 widgets in 3 minutes, how many minutes for 100 machines to make 100 widgets?", options:["100","3","33","10"], answer:1},
+  {cat:'Logical', text:"A is taller than B. C is shorter than B. Who is tallest?", options:["A","B","C","Cannot tell"], answer:0},
+  {cat:'Numerical', text:"Find the next number: 8, 27, 64, 125, ?", options:["196","200","216","225"], answer:2},
+  {cat:'Verbal', text:"Choose the word closest in meaning to 'Ephemeral'.", options:["Eternal","Fleeting","Solid","Ancient"], answer:1},
+  {cat:'Logical', text:"Five friends sit in a row. Sam sits immediately left of Max. Max sits immediately left of Tia. Who is between the other two?", options:["Sam","Max","Tia","Cannot tell"], answer:1},
+  {cat:'Logical', text:"Complete the pattern: \u25b3 \u25cb \u25b3 \u25cb \u25b3 ?", options:["\u25b3","\u25cb","\u25a1","\u2606"], answer:1},
+  {cat:'Numerical', text:"Find the next number: 5, 10, 20, 40, ?", options:["60","70","80","45"], answer:2},
+  {cat:'Verbal', text:"Kitten is to Cat as Puppy is to ?", options:["Dog","Wolf","Cub","Pet"], answer:0},
+];
+
+let cogIndex = 0;
+let cogAnswers = new Array(cogQuestions.length).fill(null);
+let cogTimeLeft = 14*60;
+let cogTimerHandle = null;
+
+function startCognitive(){
+  cogIndex = 0;
+  cogAnswers = new Array(cogQuestions.length).fill(null);
+  cogTimeLeft = 14*60;
+  showStage('stage-cog');
+  renderCogQuestion();
+  if(cogTimerHandle) clearInterval(cogTimerHandle);
+  cogTimerHandle = setInterval(()=>{
+    cogTimeLeft--;
+    updateCogTimerDisplay();
+    if(cogTimeLeft<=0){
+      clearInterval(cogTimerHandle);
+      computeCogResults();
+    }
+  },1000);
+  updateCogTimerDisplay();
+}
+function updateCogTimerDisplay(){
+  const m = Math.max(0,Math.floor(cogTimeLeft/60));
+  const s = Math.max(0,cogTimeLeft%60);
+  document.getElementById('cog-timer').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function renderCogQuestion(){
+  const q = cogQuestions[cogIndex];
+  document.getElementById('cog-counter').textContent = `Question ${cogIndex+1} of ${cogQuestions.length}`;
+  document.getElementById('cog-qtag').textContent = q.cat.toUpperCase();
+  document.getElementById('cog-qtext').textContent = q.text;
+  document.getElementById('cog-progress').style.width = (cogIndex/cogQuestions.length*100)+'%';
+
+  const wrap = document.getElementById('cog-mcq');
+  wrap.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.options.forEach((opt,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'mcq-option' + (cogAnswers[cogIndex]===i ? ' selected':'');
+    btn.setAttribute('type','button');
+    btn.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick = ()=>{ cogAnswers[cogIndex]=i; renderCogQuestion(); };
+    wrap.appendChild(btn);
+  });
+
+  document.getElementById('cog-back').disabled = cogIndex===0;
+  document.getElementById('cog-next').disabled = cogAnswers[cogIndex]===null;
+  document.getElementById('cog-next').textContent = (cogIndex===cogQuestions.length-1) ? 'See results \u2192' : 'Next \u2192';
+}
+function cogBack(){ if(cogIndex>0){ cogIndex--; renderCogQuestion(); } }
+function cogNext(){
+  if(cogAnswers[cogIndex]===null) return;
+  if(cogIndex < cogQuestions.length-1){ cogIndex++; renderCogQuestion(); }
+  else { if(cogTimerHandle) clearInterval(cogTimerHandle); computeCogResults(); }
+}
+
+function computeCogResults(){
+  let correct = 0;
+  const cats = {};
+  cogQuestions.forEach((q,i)=>{
+    cats[q.cat] = cats[q.cat] || {correct:0,total:0};
+    cats[q.cat].total++;
+    if(cogAnswers[i]===q.answer){ correct++; cats[q.cat].correct++; }
+  });
+  const pct = Math.round(correct/cogQuestions.length*100);
+
+  let band, desc, keep, work;
+  if(pct>=81){
+    band='Exceptional range'; 
+    desc="You moved through numerical, verbal, and logical items quickly and accurately \u2014 the kind of pattern usually seen in strong, flexible reasoners.";
+    keep=["Working through problems methodically before answering","Cross-checking answers when time allows","Reading each option fully before choosing"];
+    work=["Timed tasks under real pressure, to build speed without losing accuracy","Explaining your reasoning aloud to catch blind spots","Problems slightly outside your strongest category"];
+  } else if(pct>=56){
+    band='Strong range';
+    desc="A solid, above-average performance with a clear pattern of strength in at least one category and room to close gaps in another.";
+    keep=["Your accuracy on the categories you scored highest in","Reading questions carefully before answering","Pacing yourself instead of rushing every item"];
+    work=["Practicing your weakest category specifically, in short daily bursts","Timing yourself on drills to build speed","Double-checking numerical answers before locking them in"];
+  } else if(pct>=31){
+    band='Solid, developing range';
+    desc="A workable baseline with real variance between categories \u2014 some things came fast, others took longer or were missed under time pressure.";
+    keep=["Sticking with a question instead of guessing blindly","Any category where you scored above 50%","Using process of elimination on multiple-choice items"];
+    work=["Basic pattern and sequence drills, a few minutes a day","Reading comprehension and vocabulary building","Practicing under a timer to build comfort with pressure"];
+  } else {
+    band='Early range';
+    desc="This sitting suggests the format or time pressure got in the way more than reasoning ability itself \u2014 worth another attempt when rested and unhurried.";
+    keep=["Attempting every question instead of leaving blanks","Taking the time to actually read each option"];
+    work=["Retaking this without a strict time limit first, to separate skill from speed","Untimed logic puzzles to build core pattern recognition","Basic arithmetic and vocabulary practice, a little each day"];
+  }
+
+  document.getElementById('cog-score-big').textContent = pct+'%';
+  document.getElementById('cog-score-band').textContent = band;
+  document.getElementById('cog-score-desc').textContent = desc;
+  fillList('cog-keep', keep);
+  fillList('cog-work', work);
+
+  const rowsWrap = document.getElementById('cog-cat-rows');
+  rowsWrap.innerHTML = '';
+  Object.keys(cats).forEach(cat=>{
+    const c = cats[cat];
+    const cp = Math.round(c.correct/c.total*100);
+    const row = document.createElement('div');
+    row.className = 'cat-row';
+    row.innerHTML = `
+      <div class="cname">${cat}</div>
+      <div class="ctrack"><div class="cfill" style="width:${cp}%"></div></div>
+      <div class="cval">${c.correct}/${c.total}</div>
+    `;
+    rowsWrap.appendChild(row);
+  });
+
+  showStage('stage-cog-results');
+}
+</script>
+</body>
+</html>
